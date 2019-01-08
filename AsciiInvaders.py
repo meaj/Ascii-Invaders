@@ -93,6 +93,7 @@ def move_projectiles(list_of_projectiles, list_of_enemies, player_entity):
             projectile_entity[1] = -1
             projectile_entity[2] = 0
         int_count += 1
+
     return list_of_projectiles
 
 
@@ -100,17 +101,17 @@ def move_projectiles(list_of_projectiles, list_of_enemies, player_entity):
 def move_enemies(list_of_enemies, int_direction, int_lives):
     list_of_future_positions = copy.deepcopy(list_of_enemies)
     bool_shift_down = False
+
     # Move all enemies in the current direction
     for temp_entity in list_of_future_positions:
         if temp_entity[0] == -1:
             continue
-        temp_entity[1] += 0
+        temp_entity[1] += int_direction
         # If any entity is past either boundary, cancel directional movement and shift down
         if temp_entity[1] > 49 or temp_entity[1] < 0:
             int_direction *= -1
             bool_shift_down = True
             break
-
 
     if bool_shift_down:
         for enemy_entity in list_of_enemies:
@@ -170,6 +171,11 @@ def main():
     # Set console to fit game grid
     os.system('mode con: cols=52 lines=20')
 
+    # Timing Variables
+    frame_count = 0
+    delta_frame = 0
+    frame_time = 0
+
     # Main game variables
     int_score = 0
     int_lives = 3
@@ -190,16 +196,17 @@ def main():
     list_of_projectiles = [[-1, -1, 0] for i in range(16)]
 
     # Game Loop
-    #print(list_of_enemies)
     while int_lives > 0 and int_score < 300:
+        start = time.clock()
 
-        # Input Checking
+        # Input Checking every frame
         get_keypress(player_entity, list_of_projectiles)
 
-        # Projectile movement
-        list_of_projectiles = move_projectiles(list_of_projectiles, list_of_enemies, player_entity)
+        # Projectile movement every three frames
+        if frame_count % 3 == 0:
+            list_of_projectiles = move_projectiles(list_of_projectiles, list_of_enemies, player_entity)
 
-        # Check for enemy collision with player projectile
+        # Check for enemy collision with player projectile once per frame
         for enemy_entity in list_of_enemies:
             if has_collision(enemy_entity, list_of_projectiles[0]):
                 player_entity[2] = 0
@@ -207,7 +214,7 @@ def main():
                 int_score += 10
                 enemy_entity[0] = -1
 
-        # Checks for projectile collision with player
+        # Checks for projectile collision with player once per frame
         int_count = 0
         for projectile_entity in list_of_projectiles:
             if has_collision(player_entity, projectile_entity):
@@ -215,19 +222,33 @@ def main():
                 int_lives, player_entity = kill_player(int_lives, player_entity)
             int_count += 1
 
-        # Enemy Movement
-        list_of_enemies, int_direction, int_lives = move_enemies(list_of_enemies, int_direction, int_lives)
+        # Enemy Movement once every 10 frames
+        if frame_count % 10 == 0:
+            list_of_enemies, int_direction, int_lives = move_enemies(list_of_enemies, int_direction, int_lives)
 
+        # TODO: Make this fire once per frame
         # Updates the Game Grid after position checking
         game_grid = update_board(list_of_enemies, player_entity, list_of_projectiles, game_grid)
 
         # Prints Game Grid after updating
         print_board(int_lives, int_score, game_grid)
 
-        # Sleeps for 1/15th of a second
-        time.sleep(.1)
+        # TODO: Change this to run loop once every 30th of a second
+        # Timing Calculations
+        frame_count += 1
+        # frame_time += time.clock() - start
+        # delta_frame += 1
+        # FPS Checking for testing
+        # print("Frame #" + str(frame_count))
+        # fps = delta_frame / frame_time
+        # print("FPS = " + str(fps))
+        # if frame_time > 1:
+        #    delta_frame = 0
+        #    frame_time = 0
 
         # Used for testing starting frame:
         # int_lives = 0
     input("Game Over")
+
+
 main()
