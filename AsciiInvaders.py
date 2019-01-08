@@ -5,6 +5,7 @@ Ascii Invaders
 """
 import time
 import msvcrt
+import copy
 import os
 
 
@@ -72,7 +73,7 @@ def clear():
 
 # Checks for collisions between entities
 def has_collision(entity_one, entity_two):
-    if entity_one == entity_two:
+    if entity_one[0] == entity_two[0] and entity_one[1] == entity_two[1]:
         return True
     return False
 
@@ -97,20 +98,24 @@ def move_projectiles(list_of_projectiles, list_of_enemies, player_entity):
 
 # Moves the enemies
 def move_enemies(list_of_enemies, int_direction, int_lives):
-    list_of_future_positions = list_of_enemies
+    list_of_future_positions = copy.deepcopy(list_of_enemies)
     bool_shift_down = False
-    print(list_of_future_positions)
     # Move all enemies in the current direction
     for temp_entity in list_of_future_positions:
+        if temp_entity[0] == -1:
+            continue
+        temp_entity[1] += 0
         # If any entity is past either boundary, cancel directional movement and shift down
-        if temp_entity[1] + int_direction > 49 or temp_entity[1] + int_direction < -1:
+        if temp_entity[1] > 49 or temp_entity[1] < 0:
             int_direction *= -1
             bool_shift_down = True
             break
-        temp_entity[1] += int_direction
+
 
     if bool_shift_down:
         for enemy_entity in list_of_enemies:
+            if enemy_entity[0] == -1:
+                continue
             enemy_entity[0] += 1
             # If any entity shifts down off the screen, deduct a life
             if enemy_entity[0] == 14:
@@ -163,7 +168,7 @@ def print_board(int_lives, int_score, game_grid):
 
 def main():
     # Set console to fit game grid
-    os.system('mode con: cols=52 lines=16')
+    os.system('mode con: cols=52 lines=20')
 
     # Main game variables
     int_score = 0
@@ -198,10 +203,10 @@ def main():
         for enemy_entity in list_of_enemies:
             if has_collision(enemy_entity, list_of_projectiles[0]):
                 player_entity[2] = 0
+                list_of_projectiles[0] = [-1, -1, -1]
                 int_score += 10
-                enemy_entity[0] = [-1, -1, 0, 0, 1]
+                enemy_entity[0] = -1
 
-        print(list_of_enemies)
         # Checks for projectile collision with player
         int_count = 0
         for projectile_entity in list_of_projectiles:
