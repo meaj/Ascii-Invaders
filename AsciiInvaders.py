@@ -9,6 +9,14 @@ import copy
 import os
 
 
+# Clears the window
+def clear():
+    if os.name == 'nt':
+        _ = os.system('cls')
+    else:
+        _ = os.system("clear")
+
+
 # Sets the initial positions of the enemies
 def set_enemies_to_default(list_of_enemies):
     position = [0, 2]
@@ -26,7 +34,8 @@ def set_enemies_to_default(list_of_enemies):
     return list_of_enemies
 
 
-# Enemies will call this to ensure they can fire
+# TODO: Enemy return fire
+# TODO: Complete has_clear_shot()
 def has_clear_shot():
     return False
 
@@ -61,14 +70,6 @@ def kill_player(int_lives, player_entity):
     int_lives -= 1
     player_entity = [14, 24, 0, 0, -1]
     return int_lives, player_entity
-
-
-# Clears the command prompt
-def clear():
-    if os.name == 'nt':
-        _ = os.system('cls')
-    else:
-        _ = os.system("clear")
 
 
 # Checks for collisions between entities
@@ -152,9 +153,6 @@ def update_board(list_of_enemies, player_entity, list_of_projectiles, game_grid)
 
 # Prints game grid, lives and score
 def print_board(int_lives, int_score, game_grid):
-    # Clear screen
-    clear()
-
     # Print each row of the board, starting and ending each one with a ':'
     for row in game_grid:
         print(":", end='', flush=False)
@@ -173,8 +171,6 @@ def main():
 
     # Timing Variables
     frame_count = 0
-    delta_frame = 0
-    frame_time = 0
 
     # Main game variables
     int_score = 0
@@ -198,6 +194,7 @@ def main():
     # Game Loop
     while int_lives > 0 and int_score < 300:
         start = time.clock()
+        clear()
 
         # Input Checking every frame
         get_keypress(player_entity, list_of_projectiles)
@@ -222,32 +219,26 @@ def main():
                 int_lives, player_entity = kill_player(int_lives, player_entity)
             int_count += 1
 
-        # Enemy Movement once every 10 frames
-        if frame_count % 10 == 0:
+        # Enemy Movement once every 15 frames
+        if frame_count % 15 == 0:
             list_of_enemies, int_direction, int_lives = move_enemies(list_of_enemies, int_direction, int_lives)
+            if int_lives < 1:
+                int_lives = 0
 
-        # TODO: Make this fire once per frame
-        # Updates the Game Grid after position checking
+        # Updates the Game Grid after position checking once per frame
         game_grid = update_board(list_of_enemies, player_entity, list_of_projectiles, game_grid)
 
-        # Prints Game Grid after updating
+        # Prints Game Grid after updating once per frame
         print_board(int_lives, int_score, game_grid)
 
         # TODO: Change this to run loop once every 30th of a second
         # Timing Calculations
         frame_count += 1
-        # frame_time += time.clock() - start
-        # delta_frame += 1
-        # FPS Checking for testing
-        # print("Frame #" + str(frame_count))
-        # fps = delta_frame / frame_time
-        # print("FPS = " + str(fps))
-        # if frame_time > 1:
-        #    delta_frame = 0
-        #    frame_time = 0
+        delay = 1/30 - time.clock() - start
+        if delay < 0:
+            delay = 0
+        time.sleep(delay)
 
-        # Used for testing starting frame:
-        # int_lives = 0
     input("Game Over")
 
 
