@@ -1,6 +1,6 @@
 """
 Ascii Invaders
- * A minimalist version ofan  arcade classic, Space Invaders, using ascii characters and a terminal window for graphics.
+ * A minimalist version of an  arcade classic, Space Invaders, using ascii characters and a terminal window for graphics.
  * By Kevin Moore
 """
 import time
@@ -78,12 +78,20 @@ def has_collision(entity_one, entity_two):
 
 
 # Moves the projectiles
-def move_projectiles(list_of_projectiles):
+def move_projectiles(list_of_projectiles, list_of_enemies, player_entity):
+    int_count = 0
     for projectile_entity in list_of_projectiles:
         if -1 < projectile_entity[0] < 15:
             projectile_entity[0] += projectile_entity[2]
         else:
-            projectile_entity = [-1, -1, 0]
+            if int_count == 0:
+                player_entity[2] = 0
+            else:
+                list_of_enemies[int_count][2] = 0
+            projectile_entity[0] = -1
+            projectile_entity[1] = -1
+            projectile_entity[2] = 0
+        int_count += 1
     return list_of_projectiles
 
 
@@ -91,7 +99,7 @@ def move_projectiles(list_of_projectiles):
 def move_enemies(list_of_enemies, int_direction, int_lives):
     list_of_future_positions = list_of_enemies
     bool_shift_down = False
-
+    print(list_of_future_positions)
     # Move all enemies in the current direction
     for temp_entity in list_of_future_positions:
         # If any entity is past either boundary, cancel directional movement and shift down
@@ -107,11 +115,9 @@ def move_enemies(list_of_enemies, int_direction, int_lives):
             # If any entity shifts down off the screen, deduct a life
             if enemy_entity[0] == 14:
                 int_lives -=1
-                enemy_entity = [-1, -1, 0, 0, 1]
+                enemy_entity[0] = -1
     else:
         list_of_enemies = list_of_future_positions
-
-    print(list_of_enemies)
 
     return list_of_enemies, int_direction, int_lives
 
@@ -132,7 +138,7 @@ def update_board(list_of_enemies, player_entity, list_of_projectiles, game_grid)
 
     # update game grid with all projectile positions
     for projectile_entity in list_of_projectiles:
-        if projectile_entity != [-1, -1, 0]:
+        if projectile_entity[0] != -1:
             game_grid[projectile_entity[0]][projectile_entity[1]] = '|'
 
     return game_grid
@@ -179,25 +185,30 @@ def main():
     list_of_projectiles = [[-1, -1, 0] for i in range(16)]
 
     # Game Loop
-    print(list_of_enemies)
-    while int_lives != 0 and int_score < 300:
+    #print(list_of_enemies)
+    while int_lives > 0 and int_score < 300:
 
         # Input Checking
         get_keypress(player_entity, list_of_projectiles)
 
         # Projectile movement
-        list_of_projectiles = move_projectiles(list_of_projectiles)
+        list_of_projectiles = move_projectiles(list_of_projectiles, list_of_enemies, player_entity)
 
         # Check for enemy collision with player projectile
         for enemy_entity in list_of_enemies:
             if has_collision(enemy_entity, list_of_projectiles[0]):
+                player_entity[2] = 0
                 int_score += 10
                 enemy_entity[0] = [-1, -1, 0, 0, 1]
 
+        print(list_of_enemies)
         # Checks for projectile collision with player
+        int_count = 0
         for projectile_entity in list_of_projectiles:
             if has_collision(player_entity, projectile_entity):
+                list_of_enemies[int_count][2] = 0
                 int_lives, player_entity = kill_player(int_lives, player_entity)
+            int_count += 1
 
         # Enemy Movement
         list_of_enemies, int_direction, int_lives = move_enemies(list_of_enemies, int_direction, int_lives)
@@ -209,9 +220,9 @@ def main():
         print_board(int_lives, int_score, game_grid)
 
         # Sleeps for 1/15th of a second
-        time.sleep(.064)
+        time.sleep(.1)
 
         # Used for testing starting frame:
         # int_lives = 0
-
+    input("Game Over")
 main()
