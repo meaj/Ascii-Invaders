@@ -4,7 +4,7 @@
 A dead simple Ascii graphics version of arcade classic Space Invaders. Implemented in Python3 on Windows using the msvcrt library
 
 ### Contents
-AsciiInvaders.py - The game file, just click and play
+AsciiInvaders.py - The game file, just download, click, and play
 
 README.md - The readme for this project
 
