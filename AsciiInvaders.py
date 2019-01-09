@@ -8,6 +8,118 @@ import msvcrt
 import copy
 import os
 
+# TODO: Create Entity class that will replace ProjectileEntity and that Vehicle Entity will inherit from
+
+
+# A class which represents the player and enemy entities
+class VehicleEntity:
+    def __init__(self, x_pos=-1, y_pos=-1, firing=False, fire_order=-1, heading=0):
+        self.active = True
+        self.x_pos = x_pos
+        self.y_pos = y_pos
+        self.firing = firing
+        self.fire_order = fire_order
+        self.heading = heading
+
+    def set_all_values(self, x_pos=-1, y_pos=-1, firing=False, fire_order=-1, heading=0):
+        self.x_pos = x_pos
+        self.y_pos = y_pos
+        self.firing = firing
+        self.fire_order = fire_order
+        self.heading = heading
+
+    def set_fire_order(self, fire_order):
+        self.fire_order = fire_order
+
+    def set_coordinates(self, x_val, y_val):
+        self.x_pos = x_val
+        self.y_pos = y_val
+
+    def set_x(self, x_val):
+        self.x_pos = x_val
+
+    def set_y(self, y_val):
+        self.y_pos = y_val
+
+    def get_fire_order(self):
+        return self.fire_order
+
+    def get_coordinates_array(self):
+        coordinates = [self.x_pos, self.y_pos]
+        return coordinates
+
+    def get_x(self):
+        return self.x_pos
+
+    def get_y(self):
+        return self.y_pos
+
+    def shift_down(self):
+        self.x_pos += 1
+
+    def toggle_fired(self):
+        self.firing = not self.firing
+
+    def reload(self):
+        self.firing = False
+
+    def is_active(self):
+        return self.active
+
+    def disable(self):
+        self.active = False
+        self.x_pos = -1
+        self.y_pos = -1
+        self.firing = False
+        self.fire_order = -1
+        self.heading = 0
+
+
+# A class which represents the player and enemy projectile entities
+class ProjectileEntity:
+    def __init__(self, x_pos=-1, y_pos=-1, heading=0):
+        self.active = False
+        self.x_pos = x_pos
+        self.y_pos = y_pos
+        self.heading = heading
+
+    def set_all_values(self, active=False, x_pos=-1, y_pos=-1, heading=0):
+        self.active = active
+        self.x_pos = x_pos
+        self.y_pos = y_pos
+        self.heading = heading
+
+    def set_coordinates(self, x_val, y_val):
+        self.x_pos = x_val
+        self.y_pos = y_val
+
+    def set_x(self, x_val):
+        self.x_pos = x_val
+
+    def set_y(self, y_val):
+        self.y_pos = y_val
+
+    def set_heading(self, heading):
+        self.heading = heading
+
+    def get_heading(self):
+        return self.heading
+
+    def get_x(self):
+        return self.x_pos
+
+    def get_y(self):
+        return self.y_pos
+
+    def is_active(self):
+        return self.active
+
+    def disable(self):
+        self.active = False
+        self.x_pos = -1
+        self.y_pos = -1
+        self.heading = 0
+
 
 # Clears the window
 def clear():
@@ -22,59 +134,57 @@ def set_enemies_to_default(list_of_enemies):
     position = [0, 2]
     fire_order = 1
     for enemy in list_of_enemies:
-        enemy[0] = position[0]
-        enemy[1] = position[1]
+        enemy.set_coordinates(position[0], position[1])
         if position[1] > 43:
             position[0] += 1
             position[1] = -1
         position[1] += 3
-        if enemy[0] == 3:
-            enemy[3] = fire_order
+        if enemy.get_x() == 3:
+            enemy.set_fire_order(fire_order)
             fire_order += 1
     return list_of_enemies
 
 
 # TODO: Enemy return fire
 # TODO: Complete has_clear_shot()
+# Verifies that the space below an enemy is not occupied so that they can fire
 def has_clear_shot():
     return False
 
 
 # Handles firing for player and enemy
 def fire(entity, list_of_projectiles):
-    if entity[2] == 0:
-        entity[2] = 1
-        print("fire")
-        list_of_projectiles[entity[3]] = [entity[0] + entity[4], entity[1], entity[4]]
+    if not entity.firing:
+        entity.toggle_fired()
+        list_of_projectiles[entity.fire_order].set_all_values(True, entity.x_pos + entity.heading, entity.y_pos, entity.heading)
 
 
 # Checks for keyboard input for player movement and firing
 def get_keypress(player_entity, list_of_projectiles):
     keypress = msvcrt.kbhit()
     if keypress:
+        pos =  player_entity.get_y()
         key = ord(msvcrt.getch())
         if key == 32:
             fire(player_entity, list_of_projectiles)
         if key == 77:
-            print('right')
-            if player_entity[1] < 48:
-                player_entity[1] += 1
+            if pos < 48:
+                player_entity.set_y(pos+1)
         if key == 75:
-            print('left')
-            if player_entity[1] > 1:
-                player_entity[1] -= 1
+            if player_entity.get_y() > 1:
+                player_entity.set_y(pos-1)
 
 
 # Resets player position and lowers lives
 def kill_player(int_lives, player_entity):
     int_lives -= 1
-    player_entity = [14, 24, 0, 0, -1]
+    player_entity.set_all_values(14, 24, False, 0, -1)
     return int_lives, player_entity
 
 
 # Checks for collisions between entities
 def has_collision(entity_one, entity_two):
-    if entity_one[0] == entity_two[0] and entity_one[1] == entity_two[1]:
+    if entity_one.get_x() == entity_two.get_x() and entity_one.get_y() == entity_two.get_y():
         return True
     return False
 
@@ -83,16 +193,15 @@ def has_collision(entity_one, entity_two):
 def move_projectiles(list_of_projectiles, list_of_enemies, player_entity):
     int_count = 0
     for projectile_entity in list_of_projectiles:
-        if -1 < projectile_entity[0] < 15:
-            projectile_entity[0] += projectile_entity[2]
+        pos = projectile_entity.get_x()
+        if -1 < pos < 15:
+            projectile_entity.set_x(pos + projectile_entity.get_heading())
         else:
             if int_count == 0:
-                player_entity[2] = 0
+                player_entity.reload()
             else:
-                list_of_enemies[int_count][2] = 0
-            projectile_entity[0] = -1
-            projectile_entity[1] = -1
-            projectile_entity[2] = 0
+                list_of_enemies[int_count].reload()
+            projectile_entity.disable()
         int_count += 1
 
     return list_of_projectiles
@@ -105,24 +214,26 @@ def move_enemies(list_of_enemies, int_direction, int_lives):
 
     # Move all enemies in the current direction
     for temp_entity in list_of_future_positions:
-        if temp_entity[0] == -1:
+        if not temp_entity.is_active():
             continue
-        temp_entity[1] += int_direction
+        pos = temp_entity.get_y() + int_direction
         # If any entity is past either boundary, cancel directional movement and shift down
-        if temp_entity[1] > 49 or temp_entity[1] < 0:
+        if pos >= 49 or pos < 0:
             int_direction *= -1
             bool_shift_down = True
             break
+        else:
+            temp_entity.set_y(pos)
 
     if bool_shift_down:
         for enemy_entity in list_of_enemies:
-            if enemy_entity[0] == -1:
+            if not enemy_entity.is_active():
                 continue
-            enemy_entity[0] += 1
+            enemy_entity.shift_down()
             # If any entity shifts down off the screen, deduct a life
-            if enemy_entity[0] == 14:
-                int_lives -=1
-                enemy_entity[0] = -1
+            if enemy_entity.get_x() == 14:
+                int_lives -= 1
+                enemy_entity.disable()
     else:
         list_of_enemies = list_of_future_positions
 
@@ -132,21 +243,22 @@ def move_enemies(list_of_enemies, int_direction, int_lives):
 # Updates the positions of player and enemies on the game board
 def update_board(list_of_enemies, player_entity, list_of_projectiles, game_grid):
     # wipe board
+    del game_grid
     game_grid = [[' ' for i in range(50)] for j in range(15)]
 
     # update game grid with player position
-    game_grid[player_entity[0]][player_entity[1]] = '^'
+    game_grid[player_entity.get_x()][player_entity.get_y()] = '^'
 
     # update game grid with all enemy positions
     for enemy_entity in list_of_enemies:
         # print("Printing enemy at position: " + str(i) + ":" + str(j))
-        if enemy_entity[0] != -1:
-            game_grid[enemy_entity[0]][enemy_entity[1]] = 'v'
+        if enemy_entity.is_active():
+            game_grid[enemy_entity.get_x()][enemy_entity.get_y()] = 'v'
 
     # update game grid with all projectile positions
     for projectile_entity in list_of_projectiles:
-        if projectile_entity[0] != -1:
-            game_grid[projectile_entity[0]][projectile_entity[1]] = '|'
+        if projectile_entity.is_active():
+            game_grid[projectile_entity.get_x()][projectile_entity.get_y()] = '|'
 
     return game_grid
 
@@ -177,19 +289,22 @@ def main():
     int_lives = 3
     int_direction = 1
 
-    # Player entity, has position at default location, with fire state of 0, fire order of 0, and heading of -1
-    player_entity = [14, 24, 0, 0, -1]
-
-    # Array of enemy entities, which have locations which are set to default positions
-    # and fire states of 0 as well as fire order assignment, and heading of 1
-    list_of_enemies = [[-1, -1, 0, 0, 1] for i in range(30)]
-    list_of_enemies = set_enemies_to_default(list_of_enemies)
-
     # Grid which will contain the game entities
     game_grid = [['*' for i in range(50)] for j in range(15)]
 
+    # Game Entity Creation
+    # Each item displayed on the game grid is called an entity.
+
+    # Player entity, has position at default location, with fire state of False, fire order of 0, and heading of -1
+    player_entity = VehicleEntity(14, 24, False, 0, -1)
+
+    # Array of enemy entities, which have locations which are set to default positions
+    # and fire states of 0 as well as fire order assignment, and heading of 1
+    list_of_enemies = [VehicleEntity() for i in range(30)]
+    list_of_enemies = set_enemies_to_default(list_of_enemies)
+
     # Array of possible projectile entities, with their locations and their headings
-    list_of_projectiles = [[-1, -1, 0] for i in range(16)]
+    list_of_projectiles = [ProjectileEntity(-1, -1, 0) for i in range(16)]
 
     # Game Loop
     while int_lives > 0 and int_score < 300:
@@ -205,17 +320,18 @@ def main():
 
         # Check for enemy collision with player projectile once per frame
         for enemy_entity in list_of_enemies:
-            if has_collision(enemy_entity, list_of_projectiles[0]):
-                player_entity[2] = 0
-                list_of_projectiles[0] = [-1, -1, -1]
-                int_score += 10
-                enemy_entity[0] = -1
+            if enemy_entity.is_active():
+                if has_collision(enemy_entity, list_of_projectiles[0]):
+                    player_entity.reload()
+                    list_of_projectiles[0].disable()
+                    enemy_entity.disable()
+                    int_score += 10
 
         # Checks for projectile collision with player once per frame
         int_count = 0
         for projectile_entity in list_of_projectiles:
             if has_collision(player_entity, projectile_entity):
-                list_of_enemies[int_count][2] = 0
+                list_of_enemies[int_count].reload()
                 int_lives, player_entity = kill_player(int_lives, player_entity)
             int_count += 1
 
@@ -239,7 +355,8 @@ def main():
             delay = 0
         time.sleep(delay)
 
-    input("Game Over")
+    print("Game Over")
+    input()
 
 
 main()
