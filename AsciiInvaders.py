@@ -197,7 +197,7 @@ def move_enemies(list_of_enemies, int_direction, int_lives):
             continue
         pos = temp_entity.get_y() + int_direction
         # If any entity is past either boundary, cancel directional movement and shift down
-        if pos >= 49 or pos < 0:
+        if pos >= 50 or pos < 0:
             int_direction *= -1
             bool_shift_down = True
             break
@@ -244,8 +244,7 @@ def update_board(list_of_enemies, player_entity, list_of_projectiles, game_grid)
 
 # Prints game grid, lives and score
 def print_board(int_lives, int_score, game_grid):
-    clear()
-    # Print each row of the board, starting and ending each one with a ':'
+    # Construct board string out of each entry of each row of the board, starting and ending each row with a ':'
     board_string = ""
     for row in game_grid:
         board_string += ":"
@@ -253,9 +252,9 @@ def print_board(int_lives, int_score, game_grid):
             board_string += entry
         board_string += ":\n"
 
-    # Prints game data and flushes print buffer
-    #print(board_string, end='\n', flush=False)
+    # Prints game data
     out = [board_string, "Score : " + str(int_score), "ASCII INVADERS", "Lives : " + str(int_lives)]
+    clear()
     print("{}{:<12}{:^26}{:^20}".format(*out))
 
 
@@ -333,7 +332,7 @@ def main():
 
         # Timing Calculations, should cause loop to run roughly once every 30th of a second
         frame_count += 1
-        delay = 1/30 - time.clock() - start
+        delay = 0.34 - time.clock() - start
         if delay < 0:
             delay = 0
         time.sleep(delay)
