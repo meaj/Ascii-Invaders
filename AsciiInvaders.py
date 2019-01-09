@@ -122,8 +122,6 @@ def set_enemies_to_default(list_of_enemies):
     return list_of_enemies
 
 
-# TODO: Enemy return fire
-# TODO: Complete has_clear_shot()
 # Verifies that the space below an enemy is not occupied so that they can fire
 def enable_fire(entity, list_of_enemies):
     for enemy in list_of_enemies:
@@ -307,8 +305,8 @@ def main():
     list_of_projectiles = [Entity(False, -1, -1, 0) for i in range(16)]
 
     # Game Loop
+    start = time.clock()
     while int_lives > 0 and int_score < 300:
-        start = time.clock()
 
         # Input Checking every frame
         get_keypress(player_entity, list_of_projectiles)
@@ -353,10 +351,11 @@ def main():
 
         # Timing Calculations, should cause loop to run roughly once every 30th of a second
         frame_count += 1
-        delay = 0.34 - time.clock() - start
+        delay = 0.0323232 - (time.clock() - start)
         if delay < 0:
             delay = 0
         time.sleep(delay)
+        start = time.clock()
 
     print("Game Over")
     input()
