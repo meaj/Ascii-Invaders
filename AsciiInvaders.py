@@ -125,10 +125,12 @@ def set_enemies_to_default(list_of_enemies):
 # TODO: Enemy return fire
 # TODO: Complete has_clear_shot()
 # Verifies that the space below an enemy is not occupied so that they can fire
-def has_clear_shot(entity):
-    if entity.get_fire_order() != -1:
-        return True
-    return False
+def enable_fire(entity, list_of_enemies):
+    for enemy in list_of_enemies:
+        if enemy.get_coordinates_array() == [entity.get_x() - 1, entity.get_y()]:
+            enemy.set_fire_order(entity.get_fire_order())
+            enemy.set_heading(entity.get_heading())
+    return list_of_enemies
 
 
 def update_firing_order(list_of_enemies, list_of_projectiles):
@@ -321,6 +323,7 @@ def main():
                 if has_collision(enemy_entity, list_of_projectiles[0]):
                     player_entity.reload()
                     list_of_projectiles[0].disable()
+                    list_of_enemies = enable_fire(enemy_entity, list_of_enemies)
                     enemy_entity.disable()
                     int_score += 10
 
