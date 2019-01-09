@@ -4,6 +4,7 @@ Ascii Invaders
  * By Kevin Moore
 """
 import time
+import random
 import msvcrt
 import copy
 import os
@@ -113,8 +114,9 @@ def set_enemies_to_default(list_of_enemies):
             position[0] += 1
             position[1] = -1
         position[1] += 3
-        if enemy.get_x() == 3:
+        if enemy.get_x() == 1:
             enemy.set_fire_order(fire_order)
+            enemy.set_heading(1)
             fire_order += 1
         enemy.set_active(True)
     return list_of_enemies
@@ -123,8 +125,20 @@ def set_enemies_to_default(list_of_enemies):
 # TODO: Enemy return fire
 # TODO: Complete has_clear_shot()
 # Verifies that the space below an enemy is not occupied so that they can fire
-def has_clear_shot():
-    return False
+def enable_fire(entity, list_of_enemies):
+    for enemy in list_of_enemies:
+        if enemy.get_coordinates_array() == [entity.get_x() - 1, entity.get_y()]:
+            enemy.set_fire_order(entity.get_fire_order())
+            enemy.set_heading(entity.get_heading())
+    return list_of_enemies
+
+
+def update_firing_order(list_of_enemies, list_of_projectiles):
+    random.seed()
+    for enemy in list_of_enemies:
+        if enemy.get_fire_order() != -1 and random.randint(1,15) == enemy.get_fire_order():
+            fire(enemy, list_of_projectiles)
+    return list_of_enemies, list_of_projectiles
 
 
 # Handles firing for player and enemy
@@ -154,7 +168,7 @@ def get_keypress(player_entity, list_of_projectiles):
 # Resets player position and lowers lives
 def kill_player(int_lives, player_entity):
     int_lives -= 1
-    player_entity.set_all_values(14, 24, False, 0, -1)
+    player_entity.set_all_values(True, 14, 24, False, 0, -1)
     return int_lives, player_entity
 
 
@@ -171,7 +185,7 @@ def move_projectiles(list_of_projectiles, list_of_enemies, player_entity):
     for projectile_entity in list_of_projectiles:
         pos = projectile_entity.get_x()
         # If projectile is in bounds, move it in the appropriate direction
-        if 0 < pos < 15:
+        if 0 < pos < 14:
             projectile_entity.set_x(pos + projectile_entity.get_heading())
         # If out of bounds, allow entity to fire again
         else:
@@ -179,7 +193,9 @@ def move_projectiles(list_of_projectiles, list_of_enemies, player_entity):
             if int_count == 0:
                 player_entity.reload()
             else:
-                list_of_enemies[int_count].reload()
+                for enemy in list_of_enemies:
+                    if enemy.get_fire_order() == int_count:
+                        enemy.reload()
             projectile_entity.disable()
         int_count += 1
 
@@ -307,6 +323,7 @@ def main():
                 if has_collision(enemy_entity, list_of_projectiles[0]):
                     player_entity.reload()
                     list_of_projectiles[0].disable()
+                    list_of_enemies = enable_fire(enemy_entity, list_of_enemies)
                     enemy_entity.disable()
                     int_score += 10
 
@@ -314,13 +331,17 @@ def main():
         int_count = 0
         for projectile_entity in list_of_projectiles:
             if has_collision(player_entity, projectile_entity):
-                list_of_enemies[int_count].reload()
-                int_lives, player_entity = kill_player(int_lives, player_entity)
+                for enemy in list_of_enemies:
+                    if enemy.get_fire_order() == int_count:
+                        enemy.reload()
+                        list_of_projectiles[int_count].disable()
+                        int_lives, player_entity = kill_player(int_lives, player_entity)
             int_count += 1
 
         # Enemy Movement once every 15 frames
         if frame_count % 15 == 0:
             list_of_enemies, int_direction, int_lives = move_enemies(list_of_enemies, int_direction, int_lives)
+            list_of_enemies, list_of_projectiles = update_firing_order(list_of_enemies, list_of_projectiles)
             if int_lives < 1:
                 int_lives = 0
 
