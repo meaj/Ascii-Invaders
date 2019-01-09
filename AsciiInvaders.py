@@ -1,6 +1,6 @@
 """
 Ascii Invaders
- * A minimalist version of an  arcade classic, Space Invaders, using ascii characters and a terminal window for graphics.
+ * A minimalist version of an arcade classic, Space Invaders, using ascii characters and a terminal window for graphics
  * By Kevin Moore
 """
 import time
@@ -8,77 +8,11 @@ import msvcrt
 import copy
 import os
 
-# TODO: Create Entity class that will replace ProjectileEntity and that Vehicle Entity will inherit from
 
-
-# A class which represents the player and enemy entities
-class VehicleEntity:
-    def __init__(self, x_pos=-1, y_pos=-1, firing=False, fire_order=-1, heading=0):
-        self.active = True
-        self.x_pos = x_pos
-        self.y_pos = y_pos
-        self.firing = firing
-        self.fire_order = fire_order
-        self.heading = heading
-
-    def set_all_values(self, x_pos=-1, y_pos=-1, firing=False, fire_order=-1, heading=0):
-        self.x_pos = x_pos
-        self.y_pos = y_pos
-        self.firing = firing
-        self.fire_order = fire_order
-        self.heading = heading
-
-    def set_fire_order(self, fire_order):
-        self.fire_order = fire_order
-
-    def set_coordinates(self, x_val, y_val):
-        self.x_pos = x_val
-        self.y_pos = y_val
-
-    def set_x(self, x_val):
-        self.x_pos = x_val
-
-    def set_y(self, y_val):
-        self.y_pos = y_val
-
-    def get_fire_order(self):
-        return self.fire_order
-
-    def get_coordinates_array(self):
-        coordinates = [self.x_pos, self.y_pos]
-        return coordinates
-
-    def get_x(self):
-        return self.x_pos
-
-    def get_y(self):
-        return self.y_pos
-
-    def shift_down(self):
-        self.x_pos += 1
-
-    def toggle_fired(self):
-        self.firing = not self.firing
-
-    def reload(self):
-        self.firing = False
-
-    def is_active(self):
-        return self.active
-
-    def disable(self):
-        self.active = False
-        self.x_pos = -1
-        self.y_pos = -1
-        self.firing = False
-        self.fire_order = -1
-        self.heading = 0
-
-
-# A class which represents the player and enemy projectile entities
-class ProjectileEntity:
-    def __init__(self, x_pos=-1, y_pos=-1, heading=0):
-        self.active = False
+# A class which represents the projectile entities
+class Entity:
+    def __init__(self, active=False,  x_pos=-1, y_pos=-1, heading=0):
+        self.active = active
         self.x_pos = x_pos
         self.y_pos = y_pos
         self.heading = heading
@@ -111,6 +45,9 @@ class ProjectileEntity:
     def get_y(self):
         return self.y_pos
 
+    def set_active(self, active):
+        self.active = active
+
     def is_active(self):
         return self.active
 
@@ -119,6 +56,43 @@ class ProjectileEntity:
         self.x_pos = -1
         self.y_pos = -1
         self.heading = 0
+
+
+# A class which represents the player and enemy entities, it inherits from the Entity class
+class VehicleEntity(Entity):
+    def __init__(self, active=False, x_pos=-1, y_pos=-1, firing=False, fire_order=-1, heading=0):
+        super().__init__(active, x_pos, y_pos, heading)
+        self.firing = firing
+        self.fire_order = fire_order
+
+    def set_all_values(self, active=False, x_pos=-1, y_pos=-1, firing=False, fire_order=-1, heading=0):
+        super().set_all_values(active, x_pos, y_pos, heading)
+        self.firing = firing
+        self.fire_order = fire_order
+
+    def set_fire_order(self, fire_order):
+        self.fire_order = fire_order
+
+    def get_fire_order(self):
+        return self.fire_order
+
+    def get_coordinates_array(self):
+        coordinates = [self.x_pos, self.y_pos]
+        return coordinates
+
+    def shift_down(self):
+        self.x_pos += 1
+
+    def toggle_fired(self):
+        self.firing = not self.firing
+
+    def reload(self):
+        self.firing = False
+
+    def disable(self):
+        super().disable()
+        self.firing = False
+        self.fire_order = -1
 
 
 # Clears the window
@@ -142,6 +116,7 @@ def set_enemies_to_default(list_of_enemies):
         if enemy.get_x() == 3:
             enemy.set_fire_order(fire_order)
             fire_order += 1
+        enemy.set_active(True)
     return list_of_enemies
 
 
@@ -156,17 +131,19 @@ def has_clear_shot():
 def fire(entity, list_of_projectiles):
     if not entity.firing:
         entity.toggle_fired()
-        list_of_projectiles[entity.fire_order].set_all_values(True, entity.x_pos + entity.heading, entity.y_pos, entity.heading)
+        list_of_projectiles[entity.fire_order].set_all_values(True, entity.x_pos + entity.heading,
+                                                              entity.y_pos, entity.heading)
 
 
 # Checks for keyboard input for player movement and firing
 def get_keypress(player_entity, list_of_projectiles):
     keypress = msvcrt.kbhit()
     if keypress:
-        pos =  player_entity.get_y()
+        pos = player_entity.get_y()
         key = ord(msvcrt.getch())
         if key == 32:
             fire(player_entity, list_of_projectiles)
+        
         if key == 77:
             if pos < 48:
                 player_entity.set_y(pos+1)
@@ -194,9 +171,12 @@ def move_projectiles(list_of_projectiles, list_of_enemies, player_entity):
     int_count = 0
     for projectile_entity in list_of_projectiles:
         pos = projectile_entity.get_x()
+        # If projectile is in bounds, move it in the appropriate direction
         if -1 < pos < 15:
             projectile_entity.set_x(pos + projectile_entity.get_heading())
+        # If out of bounds, allow entity to fire again
         else:
+            # Check for appropriate entity to reload
             if int_count == 0:
                 player_entity.reload()
             else:
@@ -225,6 +205,7 @@ def move_enemies(list_of_enemies, int_direction, int_lives):
         else:
             temp_entity.set_y(pos)
 
+    # If an enemy has hit the wall, we cancel left/right movement and shift all entities down
     if bool_shift_down:
         for enemy_entity in list_of_enemies:
             if not enemy_entity.is_active():
@@ -293,10 +274,13 @@ def main():
     game_grid = [['*' for i in range(50)] for j in range(15)]
 
     # Game Entity Creation
-    # Each item displayed on the game grid is called an entity.
+    # Each item displayed on the game grid is an instance of the Entity class. Some Entities, such as projectiles, move
+    # within bounds and collide with other entities. VehicleEntities are a special instance of Entity that can also
+    # enter a state called "firing" which allows them to begin the movement of the projectile associated with it's
+    # fire_order. VehicleEntites with no fire_order cannot fire and are typically blocked by another VehicleEntity
 
     # Player entity, has position at default location, with fire state of False, fire order of 0, and heading of -1
-    player_entity = VehicleEntity(14, 24, False, 0, -1)
+    player_entity = VehicleEntity(True, 14, 24, False, 0, -1)
 
     # Array of enemy entities, which have locations which are set to default positions
     # and fire states of 0 as well as fire order assignment, and heading of 1
@@ -304,7 +288,7 @@ def main():
     list_of_enemies = set_enemies_to_default(list_of_enemies)
 
     # Array of possible projectile entities, with their locations and their headings
-    list_of_projectiles = [ProjectileEntity(-1, -1, 0) for i in range(16)]
+    list_of_projectiles = [Entity(False, -1, -1, 0) for i in range(16)]
 
     # Game Loop
     while int_lives > 0 and int_score < 300:
@@ -347,8 +331,7 @@ def main():
         # Prints Game Grid after updating once per frame
         print_board(int_lives, int_score, game_grid)
 
-        # TODO: Change this to run loop once every 30th of a second
-        # Timing Calculations
+        # Timing Calculations, should cause loop to run roughly once every 30th of a second
         frame_count += 1
         delay = 1/30 - time.clock() - start
         if delay < 0:
