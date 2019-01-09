@@ -4,6 +4,7 @@ Ascii Invaders
  * By Kevin Moore
 """
 import time
+import random
 import msvcrt
 import copy
 import os
@@ -131,8 +132,9 @@ def has_clear_shot(entity):
 
 
 def update_firing_order(list_of_enemies, list_of_projectiles):
+    random.seed()
     for enemy in list_of_enemies:
-        if enemy.get_fire_order() != -1:
+        if enemy.get_fire_order() != -1 and random.randint(1,15) == enemy.get_fire_order():
             fire(enemy, list_of_projectiles)
     return list_of_enemies, list_of_projectiles
 
