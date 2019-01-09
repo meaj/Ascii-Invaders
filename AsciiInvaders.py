@@ -143,12 +143,11 @@ def get_keypress(player_entity, list_of_projectiles):
         key = ord(msvcrt.getch())
         if key == 32:
             fire(player_entity, list_of_projectiles)
-        
         if key == 77:
             if pos < 48:
                 player_entity.set_y(pos+1)
         if key == 75:
-            if player_entity.get_y() > 1:
+            if pos > 1:
                 player_entity.set_y(pos-1)
 
 
@@ -172,7 +171,7 @@ def move_projectiles(list_of_projectiles, list_of_enemies, player_entity):
     for projectile_entity in list_of_projectiles:
         pos = projectile_entity.get_x()
         # If projectile is in bounds, move it in the appropriate direction
-        if -1 < pos < 15:
+        if 0 < pos < 15:
             projectile_entity.set_x(pos + projectile_entity.get_heading())
         # If out of bounds, allow entity to fire again
         else:
@@ -232,7 +231,6 @@ def update_board(list_of_enemies, player_entity, list_of_projectiles, game_grid)
 
     # update game grid with all enemy positions
     for enemy_entity in list_of_enemies:
-        # print("Printing enemy at position: " + str(i) + ":" + str(j))
         if enemy_entity.is_active():
             game_grid[enemy_entity.get_x()][enemy_entity.get_y()] = 'v'
 
@@ -246,16 +244,19 @@ def update_board(list_of_enemies, player_entity, list_of_projectiles, game_grid)
 
 # Prints game grid, lives and score
 def print_board(int_lives, int_score, game_grid):
+    clear()
     # Print each row of the board, starting and ending each one with a ':'
+    board_string = ""
     for row in game_grid:
-        print(":", end='', flush=False)
+        board_string += ":"
         for entry in row:
-            print(entry, end='', flush=False)
-        print(":", end='\n', flush=False)
+            board_string += entry
+        board_string += ":\n"
 
     # Prints game data and flushes print buffer
-    out = ["Score : " + str(int_score), "ASCII INVADERS", "Lives : " + str(int_lives)]
-    print("{:<12}{:^26}{:^20}".format(*out))
+    #print(board_string, end='\n', flush=False)
+    out = [board_string, "Score : " + str(int_score), "ASCII INVADERS", "Lives : " + str(int_lives)]
+    print("{}{:<12}{:^26}{:^20}".format(*out))
 
 
 def main():
@@ -293,7 +294,6 @@ def main():
     # Game Loop
     while int_lives > 0 and int_score < 300:
         start = time.clock()
-        clear()
 
         # Input Checking every frame
         get_keypress(player_entity, list_of_projectiles)
