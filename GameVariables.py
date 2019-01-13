@@ -109,23 +109,24 @@ class GameVariables:
 
     # Moves the projectiles
     def move_projectiles(self):
-        int_count = 0
-        for projectile_entity in self.list_of_projectiles:
-            pos = projectile_entity.get_x()
-            # If projectile is in bounds, move it in the appropriate direction
-            if 0 < pos < 14:
-                projectile_entity.set_x(pos + projectile_entity.get_heading())
-            # If out of bounds, allow entity to fire again
-            else:
-                # Check for appropriate entity to reload
-                if int_count == 0:
-                    self.player_entity.reload()
+        if self.frame_count % 3 == 0:
+            int_count = 0
+            for projectile_entity in self.list_of_projectiles:
+                pos = projectile_entity.get_x()
+                # If projectile is in bounds, move it in the appropriate direction
+                if 0 < pos < 14:
+                    projectile_entity.set_x(pos + projectile_entity.get_heading())
+                # If out of bounds, allow entity to fire again
                 else:
-                    for enemy in self.list_of_enemies:
-                        if enemy.get_fire_order() == int_count:
-                            enemy.reload()
-                projectile_entity.disable()
-            int_count += 1
+                    # Check for appropriate entity to reload
+                    if int_count == 0:
+                        self.player_entity.reload()
+                    else:
+                        for enemy in self.list_of_enemies:
+                            if enemy.get_fire_order() == int_count:
+                                enemy.reload()
+                    projectile_entity.disable()
+                int_count += 1
 
     # Moves the enemies
     def move_enemies(self):
@@ -218,6 +219,33 @@ class GameVariables:
         out = [board_string, "Score : " + str(self.int_score), "ASCII INVADERS", "Lives : " + str(self.int_lives)]
         os.system('cls')
         print("{}{:<12}{:^26}{:^20}".format(*out))
+
+    def print_game_over(self):
+        board_string = ""
+        count = 0
+        for row in self.game_grid:
+            if count == 6:
+                board_string += ":{:^50}:\n".format("GAME OVER")
+            elif count == 7:
+                final_score = self.get_final_score()
+                score_string = "FINAL SCORE : " + str(final_score)
+                board_string += ":{:^50}:".format(score_string)
+            else:
+                board_string += ":"
+                for entry in row:
+                    board_string += entry
+                board_string += ":\n"
+            count += 1
+        os.system('cls')
+        print(board_string)
+
+
+
+    def is_playing(self):
+        return self.int_lives > 0 and self.int_score < 300
+
+    def get_final_score(self):
+        return self.int_score + self.int_lives * 100
 
     def advance_frame(self):
         self.frame_count += 1

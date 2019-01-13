@@ -13,7 +13,7 @@ def main():
     os.system('mode con: cols=52 lines=20')
 
     # Display variables
-    bool_loaded = False
+    bool_loaded = True
     bool_in_menu = True
     bool_quit = False
     str_play = "PLAY"
@@ -21,21 +21,19 @@ def main():
 
     while not bool_quit:
         game_vars = GameVariables()
-        bool_loaded = True
 
         if not bool_loaded:
             game_vars = GameVariables()
             bool_loaded = True
 
         # Game Loop
-        while game_vars.int_lives > 0 and game_vars.int_score < 300:
+        while game_vars.is_playing():
 
             # Input Checking every frame
             game_vars.get_keypress()
 
             # Projectile movement every three frames
-            if game_vars.frame_count % 3 == 0:
-                game_vars.move_projectiles()
+            game_vars.move_projectiles()
 
             # Check for collisions
             game_vars.check_collisions()
@@ -53,8 +51,7 @@ def main():
             game_vars.advance_frame()
 
         # Exits or resets the game
-        out = ["Final Score: ", str(game_vars.int_score + game_vars.int_lives * 100)]
-        print("Game Over\n{}{}".format(*out))
+        game_vars.print_game_over()
         str_replay = input("Enter Q to quit, or any other key to play again\n")
         if str_replay.lower() == "q":
             bool_quit = True
