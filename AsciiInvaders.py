@@ -134,7 +134,7 @@ def enable_fire(entity, list_of_enemies):
 def update_firing_order(list_of_enemies, list_of_projectiles):
     random.seed()
     for enemy in list_of_enemies:
-        if enemy.get_fire_order() != -1 and random.randint(1,15) == enemy.get_fire_order():
+        if enemy.get_fire_order() != -1 and random.randint(1, 15) == enemy.get_fire_order():
             fire(enemy, list_of_projectiles)
     return list_of_enemies, list_of_projectiles
 
@@ -276,89 +276,111 @@ def main():
     # Set console to fit game grid
     os.system('mode con: cols=52 lines=20')
 
-    # Timing Variables
-    frame_count = 0
+    # Display variables
+    bool_loaded = False
+    bool_in_menu = True
+    bool_quit = False
+    str_play = "PLAY"
+    str_exit = "EXIT"
 
-    # Main game variables
-    int_score = 0
-    int_lives = 3
-    int_direction = 1
+    while not bool_quit:
+        # Game Entity Creation
+        # Each item displayed on the game grid is an instance of the Entity class. Some Entities, such as projectiles,
+        # move within bounds and collide with other entities. VehicleEntities are a special instance of Entity that can
+        # enter a state called "firing" which allows them to begin the movement of the projectile associated with it's
+        # fire_order. VehicleEntites with no fire_order cannot fire and are typically blocked by another VehicleEntity
+        if not bool_loaded:
+            # Timing Variables
+            frame_count = 0
 
-    # Grid which will contain the game entities
-    game_grid = [['*' for i in range(50)] for j in range(15)]
+            # Main game variables
+            int_score = 0
+            int_lives = 3
+            int_direction = 1
 
-    # Game Entity Creation
-    # Each item displayed on the game grid is an instance of the Entity class. Some Entities, such as projectiles, move
-    # within bounds and collide with other entities. VehicleEntities are a special instance of Entity that can also
-    # enter a state called "firing" which allows them to begin the movement of the projectile associated with it's
-    # fire_order. VehicleEntites with no fire_order cannot fire and are typically blocked by another VehicleEntity
+            # Grid which will contain the game entities
+            game_grid = [['*' for i in range(50)] for j in range(15)]
 
-    # Player entity, has position at default location, with fire state of False, fire order of 0, and heading of -1
-    player_entity = VehicleEntity(True, 14, 24, False, 0, -1)
+            # Player entity, has position at default location, with fire state of False, fire order 0, and heading of -1
+            player_entity = VehicleEntity(True, 14, 24, False, 0, -1)
 
-    # Array of enemy entities, which have locations which are set to default positions
-    # and fire states of 0 as well as fire order assignment, and heading of 1
-    list_of_enemies = [VehicleEntity() for i in range(30)]
-    list_of_enemies = set_enemies_to_default(list_of_enemies)
+            # Array of enemy entities, which have locations which are set to default positions
+            # and fire states of 0 as well as fire order assignment, and heading of 1
+            list_of_enemies = [VehicleEntity() for i in range(30)]
+            list_of_enemies = set_enemies_to_default(list_of_enemies)
 
-    # Array of possible projectile entities, with their locations and their headings
-    list_of_projectiles = [Entity(False, -1, -1, 0) for i in range(16)]
+            # Array of possible projectile entities, with their locations and their headings
+            list_of_projectiles = [Entity(False, -1, -1, 0) for i in range(16)]
 
-    # Game Loop
-    start = time.clock()
-    while int_lives > 0 and int_score < 300:
+            # Signal that entities have been created
+            bool_loaded = True
 
-        # Input Checking every frame
-        get_keypress(player_entity, list_of_projectiles)
-
-        # Projectile movement every three frames
-        if frame_count % 3 == 0:
-            list_of_projectiles = move_projectiles(list_of_projectiles, list_of_enemies, player_entity)
-
-        # Check for enemy collision with player projectile once per frame
-        for enemy_entity in list_of_enemies:
-            if enemy_entity.is_active():
-                if has_collision(enemy_entity, list_of_projectiles[0]):
-                    player_entity.reload()
-                    list_of_projectiles[0].disable()
-                    list_of_enemies = enable_fire(enemy_entity, list_of_enemies)
-                    enemy_entity.disable()
-                    int_score += 10
-
-        # Checks for projectile collision with player once per frame
-        int_count = 0
-        for projectile_entity in list_of_projectiles:
-            if has_collision(player_entity, projectile_entity):
-                for enemy in list_of_enemies:
-                    if enemy.get_fire_order() == int_count:
-                        enemy.reload()
-                        list_of_projectiles[int_count].disable()
-                        int_lives, player_entity = kill_player(int_lives, player_entity)
-            int_count += 1
-
-        # Enemy Movement once every 15 frames
-        if frame_count % 15 == 0:
-            list_of_enemies, int_direction, int_lives = move_enemies(list_of_enemies, int_direction, int_lives)
-            list_of_enemies, list_of_projectiles = update_firing_order(list_of_enemies, list_of_projectiles)
-            if int_lives < 1:
-                int_lives = 0
-
-        # Updates the Game Grid after position checking once per frame
-        game_grid = update_board(list_of_enemies, player_entity, list_of_projectiles, game_grid)
-
-        # Prints Game Grid after updating once per frame
-        print_board(int_lives, int_score, game_grid)
-
-        # Timing Calculations, should cause loop to run roughly once every 30th of a second
-        frame_count += 1
-        delay = 0.0323232 - (time.clock() - start)
-        if delay < 0:
-            delay = 0
-        time.sleep(delay)
+        # Game Loop
         start = time.clock()
+        while bool_loaded and int_lives > 0 and int_score < 300:
 
-    print("Game Over")
-    input()
+            # Input Checking every frame
+            get_keypress(player_entity, list_of_projectiles)
+
+            # Projectile movement every three frames
+            if frame_count % 3 == 0:
+                list_of_projectiles = move_projectiles(list_of_projectiles, list_of_enemies, player_entity)
+
+            # Check for enemy collision with player projectile once per frame
+            for enemy_entity in list_of_enemies:
+                if enemy_entity.is_active():
+                    if has_collision(enemy_entity, list_of_projectiles[0]):
+                        player_entity.reload()
+                        list_of_projectiles[0].disable()
+                        list_of_enemies = enable_fire(enemy_entity, list_of_enemies)
+                        enemy_entity.disable()
+                        int_score += 10
+
+            # Checks for projectile collision with player once per frame
+            int_count = 0
+            for projectile_entity in list_of_projectiles:
+                if has_collision(player_entity, projectile_entity):
+                    for enemy in list_of_enemies:
+                        if enemy.get_fire_order() == int_count:
+                            enemy.reload()
+                            list_of_projectiles[int_count].disable()
+                            int_lives, player_entity = kill_player(int_lives, player_entity)
+                int_count += 1
+
+            # Enemy Movement once every 15 frames
+            if frame_count % 15 == 0:
+                list_of_enemies, int_direction, int_lives = move_enemies(list_of_enemies, int_direction, int_lives)
+                list_of_enemies, list_of_projectiles = update_firing_order(list_of_enemies, list_of_projectiles)
+                if int_lives < 1:
+                    int_lives = 0
+
+            # Updates the Game Grid after position checking once per frame
+            game_grid = update_board(list_of_enemies, player_entity, list_of_projectiles, game_grid)
+
+            # Prints Game Grid after updating once per frame
+            print_board(int_lives, int_score, game_grid)
+
+            # Timing Calculations, should cause loop to run roughly once every 30th of a second
+            frame_count += 1
+            delay = 0.032323232 - (time.clock() - start)
+            if delay < 0:
+                delay = 0
+            time.sleep(delay)
+            start = time.clock()
+
+        # Exits or resets the game
+        print("Game Over")
+        str_replay = input("Enter Q to quit, or any other key to play again\n")
+        if str_replay.lower() == "q":
+            bool_quit = True
+        else:
+            bool_loaded = False
+            del game_grid
+            del player_entity
+            for enemy in list_of_enemies:
+                del enemy
+            for projectile in list_of_projectiles:
+                del projectile
 
 
 main()
