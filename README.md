@@ -1,11 +1,16 @@
 # ASCII Invaders
 
 ### Description
-A dead simple Ascii graphics version of arcade classic Space Invaders. Implemented in Python3 on Windows using
+An Ascii graphics version of arcade classic Space Invaders. Implemented in Python3 for Windows using
 the msvcrt library. 
 
+### Installation
+Download the project as a zip file, extract, and run AsciiInvaders.py
+
 ### Contents
-- ***AsciiInvaders.py*** - The game file, just download, click, and play
+- ***AsciiInvaders.py*** - The main game file
+- ***Entities.py*** - The Entity classes used by Ascii Invaders
+- ***GameVariables.py*** - The GameVariables class used by Ascii Invaders
 - ***README.md*** - The readme for this project
 
 ### Controls
