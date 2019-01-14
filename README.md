@@ -12,6 +12,7 @@ Download the project as a zip file, extract, and run AsciiInvaders.py
 - ***Entities.py*** - The Entity classes used by Ascii Invaders
 - ***GameVariables.py*** - The GameVariables class used by Ascii Invaders
 - ***README.md*** - The readme for this project
+- ***LICENSE*** - GPL-3.0 License used for this project
 
 ### Controls
 - ***Left Arrow*** and ***Right Arrow*** keys move your vehicle, the '**^**' symbol
