@@ -71,6 +71,7 @@ class GameVariables:
                 enemy.set_fire_order(entity.get_fire_order())
                 enemy.set_heading(entity.get_heading())
 
+    # Preforms random firing and checks for changes to firing order
     def update_firing_order(self):
         random.seed()
         for enemy in self.list_of_enemies:
@@ -82,22 +83,27 @@ class GameVariables:
         if not entity.firing:
             entity.toggle_fired()
             self.list_of_projectiles[entity.fire_order].set_all_values(True, entity.x_pos + entity.heading,
-                                                                  entity.y_pos, entity.heading)
+                                                                       entity.y_pos, entity.heading)
 
+    # Sets the in_menu variable to true in order to enter menus
     def enter_menu(self):
         self.in_menu = True
 
+    # Sets the in_menu variable and selection confirmation variables to false to exit menus
     def exit_menu(self):
         self.confirm_selection = False
         self.in_menu = False
 
+    # Returns true if the player is in a menu
     def is_in_menu(self):
         return self.in_menu
 
-    def get_confirm(self):
+    # Checks for player selection confirmation (Enter key press) in menu screens
+    def is_selection_confirmed(self):
         return self.confirm_selection
 
-    def get_replay(self):
+    # Returns true if the player has selected to play or replay, false if the player wants to quit
+    def is_replay_selected(self):
         if self.selection == [">PLAY<", " QUIT "]:
             return True
         else:
@@ -193,7 +199,8 @@ class GameVariables:
             self.update_firing_order()
             if self.int_lives < 1:
                 self.int_lives = 0
-                
+
+    # Preforms projectile collision checks for player and enemies
     def check_collisions(self):
         # Check for enemy collision with player projectile
         for enemy_entity in self.list_of_enemies:
@@ -250,6 +257,7 @@ class GameVariables:
         os.system('cls')
         print("{}{:<12}{:^26}{:^20}".format(*out))
 
+    # Prints the start menu
     def print_game_start(self):
         self.confirm_selection = False
         board_string = ""
@@ -268,8 +276,8 @@ class GameVariables:
             count += 1
         os.system('cls')
         print(board_string)
-        os.system('cls')
 
+    # Prints the game over menu
     def print_game_over(self):
         self.confirm_selection = False
         board_string = ""
@@ -293,12 +301,15 @@ class GameVariables:
         os.system('cls')
         print(board_string)
 
+    # Returns true if the player is in game
     def is_playing(self):
         return self.int_lives > 0 and self.int_score < 300
 
+    # Returns the final score which is calculated from the score plus 100 points for each life the player has remaining
     def get_final_score(self):
         return self.int_score + self.int_lives * 100
 
+    # Smooths out framerate to slightly more than 30 fps
     def advance_frame(self):
         self.frame_count += 1
         delay = 0.032323232 - (time.clock() - self.start)
