@@ -44,6 +44,10 @@ class GameVariables:
             # Array of possible projectile entities, with their locations and their headings
             self.list_of_projectiles = [Entity(False, -1, -1, 0) for i in range(16)]
 
+            self.selection = [">PLAY<", " QUIT "]
+            self.confirm_selection = False
+            self.in_menu = False
+
     # Sets the initial positions of the enemies
     def set_enemies_to_default(self):
         position = [0, 2]
@@ -80,6 +84,25 @@ class GameVariables:
             self.list_of_projectiles[entity.fire_order].set_all_values(True, entity.x_pos + entity.heading,
                                                                   entity.y_pos, entity.heading)
 
+    def enter_menu(self):
+        self.in_menu = True
+
+    def exit_menu(self):
+        self.confirm_selection = False
+        self.in_menu = False
+
+    def is_in_menu(self):
+        return self.in_menu
+
+    def get_confirm(self):
+        return self.confirm_selection
+
+    def get_replay(self):
+        if self.selection == [">PLAY<", " QUIT "]:
+            return True
+        else:
+            return False
+
     # Checks for keyboard input for player movement and firing
     def get_keypress(self):
         keypress = msvcrt.kbhit()
@@ -88,10 +111,17 @@ class GameVariables:
             key = ord(msvcrt.getch())
             if key == 32:
                 self.fire(self.player_entity)
+            if key == 13:
+                if self.in_menu:
+                    self.confirm_selection = True
             if key == 77:
+                if self.in_menu:
+                    self.selection = [" PLAY ", ">QUIT<"]
                 if pos < 49:
                     self.player_entity.set_y(pos + 1)
             if key == 75:
+                if self.in_menu:
+                    self.selection = [">PLAY<", " QUIT "]
                 if pos > 0:
                     self.player_entity.set_y(pos - 1)
 
@@ -165,7 +195,7 @@ class GameVariables:
                 self.int_lives = 0
                 
     def check_collisions(self):
-        # Check for enemy collision with player projectile once per frame
+        # Check for enemy collision with player projectile
         for enemy_entity in self.list_of_enemies:
             if enemy_entity.is_active():
                 if self.has_collision(enemy_entity, self.list_of_projectiles[0]):
@@ -175,7 +205,7 @@ class GameVariables:
                     enemy_entity.disable()
                     self.int_score += 10
 
-        # Checks for projectile collision with player once per frame
+        # Checks for projectile collision with player
         int_count = 0
         for projectile_entity in self.list_of_projectiles:
             if self.has_collision(self.player_entity, projectile_entity):
@@ -220,7 +250,28 @@ class GameVariables:
         os.system('cls')
         print("{}{:<12}{:^26}{:^20}".format(*out))
 
+    def print_game_start(self):
+        self.confirm_selection = False
+        board_string = ""
+        count = 0
+        for row in self.game_grid:
+            if count == 6:
+                board_string += ":{:^50}:\n".format("ASCII INVADERS")
+            elif count == 8:
+                replay_string = self.selection
+                board_string += ":{:>25}{:<25}:\n".format(*replay_string)
+            else:
+                board_string += ":"
+                for entry in row:
+                    board_string += entry
+                board_string += ":\n"
+            count += 1
+        os.system('cls')
+        print(board_string)
+        os.system('cls')
+
     def print_game_over(self):
+        self.confirm_selection = False
         board_string = ""
         count = 0
         for row in self.game_grid:
@@ -230,6 +281,9 @@ class GameVariables:
                 final_score = self.get_final_score()
                 score_string = "FINAL SCORE : " + str(final_score)
                 board_string += ":{:^50}:".format(score_string)
+            elif count == 8:
+                replay_string = self.selection
+                board_string += ":{:>25}{:<25}:\n".format(*replay_string)
             else:
                 board_string += ":"
                 for entry in row:
@@ -238,8 +292,6 @@ class GameVariables:
             count += 1
         os.system('cls')
         print(board_string)
-
-
 
     def is_playing(self):
         return self.int_lives > 0 and self.int_score < 300
