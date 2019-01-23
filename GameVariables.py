@@ -10,6 +10,7 @@ import os
 import time
 
 from Entities import Entity, VehicleEntity
+from playsound import playsound
 
 
 class GameVariables:
@@ -17,6 +18,9 @@ class GameVariables:
             # Timing Variables
             self.frame_count = frame_count
             self.start = time.clock()
+
+            self.bool_frame_sound = False
+            self.bool_end_sound = False
 
             # Main game variables
             self.int_score = int_score
@@ -81,6 +85,9 @@ class GameVariables:
     # Handles firing for player and enemy
     def fire(self, entity):
         if not entity.firing:
+            if not self.bool_frame_sound:
+                playsound("sounds\shoot.wav", False)
+                self.bool_frame_sound = True
             entity.toggle_fired()
             self.list_of_projectiles[entity.fire_order].set_all_values(True, entity.x_pos + entity.heading,
                                                                        entity.y_pos, entity.heading)
@@ -134,6 +141,7 @@ class GameVariables:
     # Resets player position and lowers lives
     def kill_player(self):
         self.int_lives -= 1
+        playsound("sounds\player_killed.wav", True)
         self.player_entity.set_all_values(True, 14, 24, False, 0, -1)
 
     @staticmethod
@@ -196,6 +204,7 @@ class GameVariables:
             else:
                 self.list_of_enemies = list_of_future_positions
 
+            playsound("sounds\invader_move.wav", False)
             self.update_firing_order()
             if self.int_lives < 1:
                 self.int_lives = 0
@@ -210,6 +219,7 @@ class GameVariables:
                     self.list_of_projectiles[0].disable()
                     self.enable_fire(enemy_entity)
                     enemy_entity.disable()
+                    playsound("sounds\invader_killed.wav", False)
                     self.int_score += 10
 
         # Checks for projectile collision with player
@@ -279,6 +289,9 @@ class GameVariables:
 
     # Prints the game over menu
     def print_game_over(self):
+        if self.int_lives == 0 and not self.bool_end_sound:
+            playsound("sounds\player_killed.wav", True)
+            self.bool_end_sound = True
         self.confirm_selection = False
         board_string = ""
         count = 0
@@ -317,3 +330,4 @@ class GameVariables:
             delay = 0
         time.sleep(delay)
         self.start = time.clock()
+        self.bool_frame_sound = False
