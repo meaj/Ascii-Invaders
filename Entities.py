@@ -1,7 +1,7 @@
 """
 Ascii Invaders - GameVariables
  * A class containing the entity classes used by Ascii Invaders
- * By Kevin Moore
+ * Copyright (C) 2019 Meaj
 """
 
 

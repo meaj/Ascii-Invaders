@@ -1,26 +1,44 @@
 """
 Ascii Invaders
  * A minimalist version of an arcade classic, Space Invaders, using ascii characters and a terminal window for graphics
- * By Kevin Moore
+ * Copyright (C) 2019 Meaj
+
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 import os
+import pdb
 
 from GameVariables import GameVariables
 
 
 def main():
+    #pdb.set_trace()
+
     # Set console to fit game grid
     os.system('mode con: cols=52 lines=20')
 
     # Display variables
-    bool_loaded = False
+    bool_loaded = True
     bool_started = False
     bool_quit = False
 
-    while not bool_quit:
-        bool_quit = False
+    # Initial game variables
+    game_vars = GameVariables()
 
-        if not bool_loaded and not bool_quit:
+    while not bool_quit:
+        # Resets game for replay
+        if not bool_loaded:
             game_vars = GameVariables()
             bool_loaded = True
 

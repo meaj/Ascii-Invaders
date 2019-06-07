@@ -5,11 +5,11 @@ An Ascii graphics version of arcade classic Space Invaders. Implemented in Pytho
 the msvcrt and playsound libraries. 
 
 ### Installation
-#####Windows:
-- Use pip to install playsound msvcrt. 
+####Windows:
+- Use pip to install playsound and msvcrt. 
 - Download the project as a zip file, extract, and run AsciiInvaders.py
 
-#####Linux:
+####Linux:
    - Coming soon!
 
 ### Contents

@@ -1,7 +1,7 @@
 """
 Ascii Invaders - GameVariables
  * A class containing the major variables and functions used in Ascii Invaders
- * By Kevin Moore
+ * Copyright (C) 2019 Meaj
 """
 import random
 import msvcrt
@@ -325,7 +325,7 @@ class GameVariables:
     # Smooths out framerate to slightly more than 30 fps
     def advance_frame(self):
         self.frame_count += 1
-        delay = 0.032323232 - (time.clock() - self.start)
+        delay = (1/60) - (time.clock() - self.start)
         if delay < 0:
             delay = 0
         time.sleep(delay)
