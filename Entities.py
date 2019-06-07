@@ -1,5 +1,5 @@
 """
-Ascii Invaders - GameVariables
+Ascii Invaders - Entities
  * A class containing the entity classes used by Ascii Invaders
  * Copyright (C) 2019 Meaj
 """
